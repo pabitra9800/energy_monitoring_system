@@ -1,0 +1,85 @@
+{
+  "waste_rules": [
+    {
+      "appliance_id": "appliance_4",
+      "type": "time_range",
+      "start_hour": 23,
+      "end_hour": 5,
+      "power_threshold": 50,
+      "message": "TV is ON during night hours — possible waste."
+    },
+    {
+      "appliance_id": "appliance_1",
+      "type": "continuous_usage",
+      "minutes_threshold": 360,
+      "power_threshold": 20,
+      "message": "Fan 1 has been ON for more than 6 hours — possible waste."
+    },
+    {
+      "appliance_id": "appliance_2",
+      "type": "continuous_usage",
+      "minutes_threshold": 360,
+      "power_threshold": 20,
+      "message": "Fan 2 has been ON for more than 6 hours — possible waste."
+    },
+    {
+      "appliance_id": "appliance_3",
+      "type": "continuous_usage",
+      "minutes_threshold": 360,
+      "power_threshold": 20,
+      "message": "Fan 3 has been ON for more than 6 hours — possible waste."
+    },
+    {
+      "appliance_id": "appliance_5",
+      "type": "abnormal_usage",
+      "power_threshold": 300,
+      "duration_readings": 200,
+      "message": "Refrigerator is consuming unusually high power — check for issues."
+    }
+  ],
+
+  "summary_rules": [
+    {
+      "appliance_id": "appliance_4",
+      "type": "max_on_time",
+      "minutes_threshold": 240,
+      "power_threshold": 50,
+      "message": "Alert: TV has been on for over 4 hours!"
+    },
+    {
+      "appliance_id": "appliance_1",
+      "type": "max_on_time",
+      "minutes_threshold": 360,
+      "power_threshold": 20,
+      "message": "Alert: Fan 1 has been on for more than 6 hours."
+    }
+  ],
+
+  "saving_tips": [
+    {
+      "appliance_id": "appliance_1",
+      "cost_threshold": 20,
+      "message": "Consider reducing Fan 1 usage to save energy."
+    },
+    {
+      "appliance_id": "appliance_2",
+      "cost_threshold": 20,
+      "message": "Fan 2 is consuming too much — turn it off when not needed."
+    },
+    {
+      "appliance_id": "appliance_3",
+      "cost_threshold": 20,
+      "message": "Fan 3 is consuming too much — turn it off when not needed."
+    },
+    {
+      "appliance_id": "appliance_4",
+      "cost_threshold": 30,
+      "message": "TV is a high consumer. Turn it off when not in use."
+    },
+    {
+      "appliance_id": "appliance_5",
+      "cost_threshold": 40,
+      "message": "Refrigerator running cost is high — ensure door seals are fine."
+    }
+  ]
+}

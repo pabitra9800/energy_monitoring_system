@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Live Home Energy Dashboard</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #f5f7fa, #e4ecf5);
+      color: #333;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark {
+      background: linear-gradient(135deg, #1e1e2f, #12121c);
+      color: #e0e0e0;
+    }
+
+    header {
+      background: #00796b;
+      color: white;
+      padding: 20px 40px;
+      text-align: center;
+      font-size: 1.8em;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .dark header {
+      background: #004d40;
+    }
+
+    #toggleMode {
+      position: absolute;
+      right: 20px;
+      top: 15px;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #fff;
+      color: #00796b;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .dark #toggleMode {
+      background: #333;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s, color 0.3s;
+    }
+
+    .dark .card {
+      background: #2a2a3d;
+      color: #e0e0e0;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.2em;
+      color: inherit;
+    }
+
+    .highlight {
+      font-size: 2.2em;
+      font-weight: bold;
+      color: #00796b;
+    }
+
+    .dark .highlight {
+      color: #4dd0e1;
+    }
+
+    .alert-box {
+      background: #ffe8e8;
+      border-left: 6px solid #ff4c4c;
+      padding: 15px;
+      border-radius: 12px;
+      font-weight: bold;
+      color: #b71c1c;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .dark .alert-box {
+      background: #5c2b2b;
+      color: #ffaaaa;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    canvas {
+      margin-top: 15px;
+    }
+  </style>
+  <style>
+    /* Appliance container row */
+    .appliance-row {
+      display: flex;
+      gap: 30px;
+      /* space between appliances */
+      flex-wrap: wrap;
+      /* allows wrapping if screen is small */
+    }
+
+    /* Each appliance block */
+    .appliance-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    /* Toggle Switch Container */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+      margin-right: 12px;
+    }
+
+    /* Hide default checkbox */
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    /* Slider design */
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: 0.3s;
+      border-radius: 34px;
+    }
+
+    /* Knob inside the slider */
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    /* ON state */
+    input:checked+.slider {
+      background-color: #009688;
+      /* Teal */
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(24px);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+</head>
+
+<body>
+  <header>
+    ⚡ Live Home Energy Dashboard
+    <button id="toggleMode">🌙 Dark Mode</button>
+  </header>
+
+  <div class="container">
+    <div class="card" style="margin-bottom: 20px;">
+      <h2>Simulate Appliance States</h2>
+      <div id="applianceSwitches">
+        <!-- Example Switch -->
+        <label>
+          <span>Fan 1</span>
+          <label class="toggle-switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </label>
+
+        <label>
+          <span>TV</span>
+          <label class="toggle-switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </label>
+      </div>
+    </div>
+    <!-- <div class="card">
+      <h2>Simulate Appliance States</h2>
+      <div id="applianceSwitches"></div>
+    </div> -->
+    <!-- Top Counters -->
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Total Energy Used Today</h2>
+        <p id="totalEnergyCounter" class="highlight">0.00 kWh</p>
+      </div>
+      <div class="card">
+        <h2>Most Expensive Appliance</h2>
+        <p id="mostExpensiveAppliance" class="highlight">Calculating...</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 20px;">
+      <h2>Top Consumer (Now)</h2>
+      <p id="topConsumer" class="highlight">Loading...</p>
+    </div>
+    <div class="card" style="margin-top: 20px;">
+      <h2>Current Usage (Watts)</h2>
+      <table id="currentUsageTable">
+        <tr>
+          <th>Appliance</th>
+          <th>Power (W)</th>
+        </tr>
+      </table>
+    </div>
+    <div class="card" style="margin-top: 20px;">
+      <h2>Peak Usage Hour</h2>
+      <p id="peakUsageHour" class="highlight">Loading...</p>
+    </div>
+
+    <!-- Alerts -->
+    <div id="alertsSection" class="card" style="margin-top:20px;">
+      <h2>Waste Alerts</h2>
+      <ul id="alertsList">
+        <li>Loading...</li>
+      </ul>
+    </div>
+
+    <!-- Saving Tips -->
+    <div id="tipsSection" class="card" style="margin-top:20px;">
+      <h2>Saving Tips</h2>
+      <ul id="tipsList">
+        <li>Loading...</li>
+      </ul>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-2" style="margin-top: 20px;">
+      <div class="card">
+        <h2 id="chartTitle">Energy Consumption Breakdown</h2>
+        <canvas id="energyChart"></canvas>
+      </div>
+      <div class="card">
+        <h2>Appliance Usage Share</h2>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+      <h2>Dashboard Summary</h2>
+      <!-- <pre id="dashboardSummary"></pre> -->
+      <div id="dashboardSummary">
+        <!-- Summary content will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const applianceNames = {
+      "appliance_1": "Fan 1",
+      "appliance_2": "Fan 2",
+      "appliance_3": "Fan 3",
+      "appliance_4": "TV",
+      "appliance_5": "Refrigerator"
+    };
+
+    let myChart, myPieChart;
+
+    // Energy consumption bar chart
+    function fetchData() {
+      fetch('/data')
+        .then(res => res.json())
+        .then(data => { if (data.readings?.length) updateChart(data.readings); })
+        .catch(err => console.error('Error fetching data:', err));
+    }
+
+    function updateChart(readings) {
+      const totals = {};
+      readings.forEach(r => {
+        if (!totals[r.appliance_id]) totals[r.appliance_id] = 0;
+        totals[r.appliance_id] += r.power_watts;
+      });
+      const labels = Object.keys(totals).map(id => applianceNames[id] || id);
+      const dataVals = Object.values(totals).map(v => (v * 5 / 3600 / 1000).toFixed(3)); // kWh
+
+      if (myChart) {
+        myChart.data.labels = labels;
+        myChart.data.datasets[0].data = dataVals;
+        myChart.update();
+      } else {
+        myChart = new Chart(document.getElementById('energyChart'), {
+          type: 'bar',
+          data: { labels, datasets: [{ label: 'Total Energy (kWh)', data: dataVals, backgroundColor: 'rgba(0,121,107,0.6)', borderColor: '#00796b', borderWidth: 1, borderRadius: 8 }] },
+          options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+      }
+      document.getElementById('chartTitle').innerText =
+        `Energy Consumption Breakdown (Last ${readings.length} Readings)`;
+    }
+
+    // Top consumer now
+    function updateTopConsumer() {
+      fetch('/top_consumer')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('topConsumer').innerText =
+            data.top_consumer ? `${data.top_consumer} (${data.power}W)` : "N/A";
+        });
+    }
+
+    // Current usage table
+    function updateCurrentUsage() {
+      fetch('/current_usage')
+        .then(res => res.json())
+        .then(data => {
+          const table = document.getElementById('currentUsageTable');
+          table.innerHTML = '<tr><th>Appliance</th><th>Power (W)</th></tr>';
+          Object.entries(data).forEach(([name, power]) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${name}</td><td>${power}</td>`;
+            table.appendChild(row);
+          });
+        });
+    }
+
+    // Peak usage hour
+    function updatePeakUsage() {
+      fetch('/peak_usage')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('peakUsageHour').innerText =
+            data.peak_hour !== null ? `${data.peak_hour}:00` : "N/A";
+        });
+    }
+
+    // Advanced summary - most expensive appliance today
+    function updateAdvancedSummary() {
+      fetch('/advanced_summary')
+        .then(res => res.json())
+        .then(data => {
+          const id = data.most_expensive_appliance;
+          const name = applianceNames[id] || "N/A";
+          const cost = data.appliance_costs?.[id] ? `₹${data.appliance_costs[id].toFixed(2)}` : "N/A";
+          document.getElementById('mostExpensiveAppliance').innerText = `${name} (${cost})`;
+        })
+        .catch(err => console.error('Error fetching advanced summary:', err));
+    }
+
+    // Daily counters + pie chart
+    function updateDailyCounters() {
+      fetch('/daily_counters')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.total_daily_energy_kwh) return;
+          document.getElementById('totalEnergyCounter').innerText = `${data.total_daily_energy_kwh.toFixed(3)} kWh`;
+          // const pieLabels = Object.keys(data.pie_chart_data);
+          const pieLabels = Object.keys(data.pie_chart_data).map(id => applianceNames[id] || id);
+          const pieData = Object.values(data.pie_chart_data);
+          if (myPieChart) {
+            myPieChart.data.labels = pieLabels;
+            myPieChart.data.datasets[0].data = pieData;
+            myPieChart.update();
+          } else {
+            myPieChart = new Chart(document.getElementById('pieChart'), {
+              type: 'doughnut',
+              data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: ['#ff6f61', '#42a5f5', '#ffca28', '#26a69a', '#7e57c2'], borderColor: '#fff', borderWidth: 2 }] },
+              options: {
+                responsive: true, cutout: '65%',
+                plugins: {
+                  datalabels: {
+                    color: '#fff', font: { weight: 'bold', size: 14 },
+                    formatter: (value, ctx) => {
+                      const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                      return ((value / sum) * 100).toFixed(1) + "%";
+                    }
+                  }
+                }
+              },
+              plugins: [ChartDataLabels]
+            });
+          }
+        })
+        .catch(err => console.error('Error fetching daily counters:', err));
+    }
+
+    // Waste alerts
+    function updateAlerts() {
+      fetch('/waste_alerts')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('alertsList');
+          list.innerHTML = "";
+          if (data.alerts?.length) data.alerts.forEach(msg => { const li = document.createElement('li'); li.innerText = msg; list.appendChild(li); });
+          else list.innerHTML = "<li>No current alerts 🎉</li>";
+        })
+        .catch(err => console.error('Error fetching waste alerts:', err));
+    }
+
+    // Saving tips
+    function updateTips() {
+      fetch('/saving_tips')
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('tipsList');
+          list.innerHTML = "";
+          if (data.tips?.length) data.tips.forEach(msg => { const li = document.createElement('li'); li.innerText = msg; list.appendChild(li); });
+          else list.innerHTML = "<li>All good! 👍</li>";
+        })
+        .catch(err => console.error('Error fetching saving tips:', err));
+    }
+
+    // Dashboard summary
+    function updateDashboardSummary() {
+      fetch('/dashboard_summary')
+        .then(res => res.json())
+        .then(data => {
+          const summaryDiv = document.getElementById('dashboardSummary');
+          if (!data.advanced_summary) {
+            summaryDiv.innerHTML = "<em>No summary data available.</em>";
+            return;
+          }
+
+          // Format usage breakdown
+          const usageRows = Object.entries(data.advanced_summary.usage_kwh)
+            .map(([name, kwh]) =>
+              `<tr><td>${name}</td><td style="text-align:right;">${kwh.toFixed(3)} kWh</td></tr>`
+            ).join("");
+
+          // Format current usage
+          const currentRows = Object.entries(data.current_usage)
+            .map(([name, watts]) =>
+              `<tr><td>${name}</td><td style="text-align:right;">${watts} W</td></tr>`
+            ).join("");
+
+          // Format alerts
+          const alerts = data.alerts && data.alerts.length
+            ? `<ul>${data.alerts.map(msg => `<li>⚠️ ${msg}</li>`).join("")}</ul>`
+            : "<span style='color: #388e3c; font-weight:600;'>✅ No current alerts</span>";
+
+          summaryDiv.innerHTML = `
+            <div class="summary-section">
+              <div class="summary-card">
+                <span class="summary-icon">💰</span>
+                <div>
+                  <div style="font-size:1.1em;font-weight:600;">Total Cost</div>
+                  <div style="font-size:1.4em;color:#00796b;" class="dark" style="color:#4dd0e1;">₹${data.advanced_summary.total_cost.toFixed(2)}</div>
+                </div>
+              </div>
+              <div class="summary-card">
+                <span class="summary-icon">⚡</span>
+                <div>
+                  <div style="font-size:1.1em;font-weight:600;">Total Energy Used</div>
+                  <div style="font-size:1.4em;color:#00796b;" class="dark" style="color:#4dd0e1;">${data.advanced_summary.total_kwh.toFixed(3)} kWh</div>
+                </div>
+              </div>
+            </div>
+            <div style="margin-bottom: 18px;">
+              <strong>Usage Breakdown</strong>
+              <table class="summary-table">
+                <tr><th>Appliance</th><th style="text-align:right;">Energy (kWh)</th></tr>
+                ${usageRows}
+              </table>
+            </div>
+            <div style="margin-bottom: 18px;">
+              <strong>Current Usage</strong>
+              <table class="summary-table">
+                <tr><th>Appliance</th><th style="text-align:right;">Power (W)</th></tr>
+                ${currentRows}
+              </table>
+            </div>
+            <div class="summary-alerts">
+              <strong>Alerts:</strong><br>
+              ${alerts}
+            </div>
+          `;
+        });
+    }
+    // Dark mode toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('toggleMode');
+      btn.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        btn.innerText = document.body.classList.contains('dark') ? "☀️ Light Mode" : "🌙 Dark Mode";
+      });
+      fetchData(); updateTopConsumer(); updateCurrentUsage(); updatePeakUsage(); updateAdvancedSummary(); updateDailyCounters(); updateAlerts(); updateTips(); updateDashboardSummary();
+      setInterval(() => { fetchData(); updateTopConsumer(); updateCurrentUsage(); updatePeakUsage(); updateAdvancedSummary(); updateDailyCounters(); updateAlerts(); updateTips(); updateDashboardSummary(); }, 5000);
+    });
+
+    // Appliance state switches
+    // function renderApplianceSwitches() {
+    //   fetch('/appliance_states')
+    //     .then(res => res.json())
+    //     .then(states => {
+    //       const container = document.getElementById('applianceSwitches');
+    //       container.innerHTML = '';
+    //       Object.entries(states).forEach(([aid, state]) => {
+    //         const label = applianceNames[aid] || aid;
+    //         container.innerHTML += `
+    //           <label style="margin-right:18px;">
+    //             <input type="checkbox" data-aid="${aid}" ${state ? 'checked' : ''}>
+    //             ${label}
+    //           </label>
+    //         `;
+    //       });
+    //       // Add event listeners
+    //       container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    //         cb.addEventListener('change', function () {
+    //           fetch('/appliance_states', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ appliance_id: this.dataset.aid, state: this.checked })
+    //           });
+    //         });
+    //       });
+    //     });
+    // }
+
+
+    function renderApplianceSwitches() {
+      fetch('/appliance_states')
+        .then(res => res.json())
+        .then(states => {
+          const container = document.getElementById('applianceSwitches');
+          container.innerHTML = '<div class="appliance-row"></div>';
+          const row = container.querySelector('.appliance-row');
+
+          Object.entries(states).forEach(([aid, state]) => {
+            const label = applianceNames[aid] || aid;
+            row.innerHTML += `
+          <div class="appliance-block">
+            <span>${label}</span>
+            <label class="toggle-switch">
+              <input type="checkbox" data-aid="${aid}" ${state ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </div>
+        `;
+          });
+
+          // Add event listeners
+          row.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', function () {
+              fetch('/appliance_states', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appliance_id: this.dataset.aid, state: this.checked })
+              });
+            });
+          });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderApplianceSwitches);
+  </script>
+</body>
+
+</html>
