@@ -12,7 +12,7 @@ def calculate_energy(readings):
     return dict(usage)
 
 
-def latest_by_appliance(readings):
+# def latest_by_appliance(readings):
     """Get latest reading per appliance"""
     latest = {}
     for r in reversed(readings):
@@ -20,6 +20,28 @@ def latest_by_appliance(readings):
             latest[r['appliance_id']] = r
     return latest
 
+def latest_by_appliance(readings):
+    """
+    Return a dict of latest reading per appliance_id.
+    Keys: appliance_id, Values: full reading dict (most recent by timestamp).
+    """
+    latest = {}
+    # helper to parse timestamp (handle datetime or ISO string)
+    def _ts(r):
+        ts = r.get("timestamp")
+        if isinstance(ts, datetime):
+            return ts
+        try:
+            return datetime.fromisoformat(ts)
+        except Exception:
+            return datetime.min
+
+    # sort readings newest first and pick first occurrence per appliance
+    for r in sorted(readings, key=_ts, reverse=True):
+        aid = r.get("appliance_id")
+        if aid and aid not in latest:
+            latest[aid] = r
+    return latest
 
 def is_in_time_range(hour, start, end):
     """Check if hour is in start-end range (supports wrapping around midnight)"""
